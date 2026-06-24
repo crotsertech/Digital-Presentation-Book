@@ -2,16 +2,18 @@
 //  Digital_Presentation_BookApp.swift
 //  Digital Presentation Book
 //
-//  Created by N. T. Crotser on 2026/6/19.
-//
 
 import SwiftUI
 
 @main
 struct Digital_Presentation_BookApp: App {
+    @State private var store = BookStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(store)
+                .task { store.refresh() }
         }
     }
 }

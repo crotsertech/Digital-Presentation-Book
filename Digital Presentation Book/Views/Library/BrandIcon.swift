@@ -1,12 +1,3 @@
-//
-//  BrandIcon.swift
-//  Digital Presentation Book
-//
-//  Loads `DPB_icon.png` from the bundle for in-app branding (nav title,
-//  empty states, etc.). Falls back to a tinted SF Symbol if the asset
-//  can't be found so the UI still renders cleanly.
-//
-
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -29,9 +20,8 @@ struct BrandIcon: View {
         }
     }
 
-    /// Looks for `DPB_icon` in the asset catalog first, then for a loose
-    /// `DPB_icon.png` anywhere in the bundle (including the `Icons`
-    /// subdirectory the synced group preserves).
+    /// Asset catalog first; then a loose `DPB_icon.png` in the bundle root
+    /// or `Icons/` subdirectory (synced groups preserve subdirectories).
     private var loadedImage: Image? {
         #if canImport(UIKit)
         if let asset = UIImage(named: "DPB_icon") {

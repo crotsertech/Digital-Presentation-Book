@@ -1,12 +1,3 @@
-//
-//  SlideCanvas.swift
-//  Digital Presentation Book
-//
-//  Renders one slide at the book's aspect ratio, scaling to fit the
-//  available space. All children use normalized coordinates so the layout
-//  is resolution-independent.
-//
-
 import SwiftUI
 
 struct SlideCanvas: View {
@@ -17,11 +8,12 @@ struct SlideCanvas: View {
     var body: some View {
         GeometryReader { proxy in
             let canvasSize = canvasSize(in: proxy.size)
+            let scale = canvasSize.height / book.aspectRatio.nominalSize.height
             ZStack {
                 backgroundView
                 ForEach(slide.elements) { element in
                     let rect = element.frame.cgRect(in: canvasSize)
-                    SlideElementView(element: element, package: package)
+                    SlideElementView(element: element, package: package, canvasScale: scale)
                         .frame(width: rect.width, height: rect.height)
                         .position(x: rect.midX, y: rect.midY)
                 }
@@ -56,8 +48,8 @@ struct SlideCanvas: View {
         }
     }
 
-    /// Compute the largest rectangle of `book.aspectRatio` that fits in
-    /// `available`, used to letterbox the slide.
+    /// Largest rectangle of `book.aspectRatio` that fits in `available`,
+    /// used to letterbox the slide inside the player.
     private func canvasSize(in available: CGSize) -> CGSize {
         let ratio = book.aspectRatio.ratio
         let widthIfHeightFits = available.height * ratio

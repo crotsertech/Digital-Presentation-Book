@@ -27,7 +27,7 @@ enum DPBPackageError: LocalizedError {
 ///         assets/
 ///         thumbnails/
 ///
-/// The same layout is used inside the exported zip — `DPBArchive` only
+/// The same layout is used inside the exported zip. `DPBArchive` only
 /// compresses it.
 struct DPBPackage {
     static let manifestFilename = "manifest.json"

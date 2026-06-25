@@ -1,11 +1,3 @@
-//
-//  SlideInspector.swift
-//  Digital Presentation Book
-//
-//  Right-side inspector shown when no element is selected. Edits the
-//  current slide's title and presenter notes.
-//
-
 import SwiftUI
 
 struct SlideInspector: View {
@@ -35,6 +27,32 @@ struct SlideInspector: View {
             Section("Title") {
                 TextField("Slide title", text: $slide.title, axis: .vertical)
                     .lineLimit(1...3)
+            }
+
+            Section {
+                Toggle(isOn: $slide.isTemplate) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Use as Template")
+                        Text("Templates appear in the +Add Slide menu so you can duplicate them. Image assets are shared, not re-uploaded.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("Template")
+            }
+
+            Section {
+                Toggle(isOn: $slide.isHidden) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Hide from Presentation")
+                        Text("Hidden slides stay in the editor but are skipped when presenting.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("Visibility")
             }
 
             Section {

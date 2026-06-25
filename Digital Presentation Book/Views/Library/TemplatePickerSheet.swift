@@ -1,16 +1,7 @@
-//
-//  TemplatePickerSheet.swift
-//  Digital Presentation Book
-//
-//  Modal sheet shown when the user taps the "From Template" tile. Lists
-//  every `BookTemplate` with a short summary and lets the user kick off
-//  creation. The caller decides what to do with the resulting Book.
-//
-
 import SwiftUI
 
 struct TemplatePickerSheet: View {
-    var onSelect: (BookTemplate) -> Void
+    var onSelect: (BookTemplate, String?) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var customTitle: String = ""
@@ -71,13 +62,8 @@ struct TemplatePickerSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
                         let trimmed = customTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-                        var template = selectedTemplate
-                        if !trimmed.isEmpty {
-                            _ = trimmed
-                        }
-                        onSelect(template)
+                        onSelect(selectedTemplate, trimmed.isEmpty ? nil : trimmed)
                         dismiss()
-                        _ = template
                     }
                     .buttonStyle(.borderedProminent)
                 }

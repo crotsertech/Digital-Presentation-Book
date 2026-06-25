@@ -1,0 +1,59 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Xcode user data and per-user state
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+WorkspaceSettings.xcsettings
+
+# Build products
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.app
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+.swiftpm/
+.netrc
+
+# Playground caches
+timeline.xctimeline
+playground.xcworkspace
+
+# CocoaPods (not used here, kept for safety)
+Pods/
+Podfile.lock
+
+# fastlane (not used here, kept for safety)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Editor and tooling
+.vscode/
+.idea/
+*.swp
+*.swo
+.envrc
+
+# Local secrets and one-off scratch files
+*.local
+secrets.json
+.env
+.env.*

@@ -1,12 +1,3 @@
-//
-//  BookTemplate.swift
-//  Digital Presentation Book
-//
-//  Starting points for new presentations. Each template produces a fully
-//  populated Book; the caller is responsible for saving and opening it in
-//  the editor.
-//
-
 import Foundation
 import SwiftUI
 
@@ -32,7 +23,7 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
         case .salesCall:
             return "3-chapter structure: Welcome, Your Water Today, The Solution. Includes the hardness cost calculator."
         case .followUp:
-            return "Short deck for return visits — recap, equipment install, next steps."
+            return "Short deck for return visits: recap, equipment install, next steps."
         }
     }
 
@@ -52,8 +43,8 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Produce a fresh Book from this template. Each call generates new
-    /// UUIDs so two books made from the same template don't collide.
+    /// Each call generates new UUIDs so two books made from the same
+    /// template don't collide.
     @MainActor
     func makeBook(title: String? = nil) -> Book {
         switch self {
@@ -65,8 +56,6 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
             return Self.makeFollowUp(title: title ?? "Follow-Up Visit")
         }
     }
-
-    // MARK: - Factories
 
     @MainActor
     private static func makeBlank(title: String) -> Book {
@@ -102,7 +91,6 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
 
     @MainActor
     private static func makeSalesCall(title: String?) -> Book {
-        // Reuse the sample book content as the canonical sales-call starter.
         var book = SampleBook.make()
         book.id = UUID()
         book.title = title ?? "New In-Home Presentation"
@@ -110,8 +98,8 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
         book.createdAt = .now
         book.updatedAt = .now
         book.revision = 1
-        // Re-stamp chapter & slide UUIDs so editing this copy doesn't
-        // collide with any other book made from the same template.
+        // Re-stamp chapter, slide, and element UUIDs so editing this copy
+        // doesn't collide with any other book made from the same template.
         book.chapters = book.chapters.map { chapter in
             var c = chapter
             c.id = UUID()

@@ -1,12 +1,3 @@
-//
-//  LibraryView.swift
-//  Digital Presentation Book
-//
-//  Home screen showing the salesperson's installed presentations. The
-//  page has two grids: a "Create" row with dedicated New / From Template
-//  / Edit Book tiles, and the existing-presentation grid below.
-//
-
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -18,9 +9,12 @@ struct LibraryView: View {
     @State private var showingImporter = false
     @State private var exportingBook: Book?
     @State private var deletingBook: Book?
+    @State private var renamingBook: Book?
+    @State private var renameDraft: String = ""
 
     @State private var showingTemplatePicker = false
     @State private var showingEditPicker = false
+    @State private var showingAbout = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 260, maximum: 360), spacing: 20)
@@ -41,7 +35,17 @@ struct LibraryView: View {
             }
             .background(.background.secondary)
             .navigationTitle("Presentations")
-            .toolbar { toolbarContent }
+            .toolbar {
+                ToolbarItem(placement: .navigation) {
+                    HStack(spacing: 8) {
+                        BrandIcon()
+                            .frame(width: 28, height: 28)
+                        Text("Digital Presentation Book")
+                            .font(.headline)
+                    }
+                }
+                toolbarContent
+            }
             .fullScreenCoverIfAvailable(item: $presentingBook) { book in
                 PlayerView(book: book, package: store.package(for: book))
             }
@@ -58,9 +62,12 @@ struct LibraryView: View {
                     editingBook = book
                 }
             }
+            .sheet(isPresented: $showingAbout) {
+                AboutSheet()
+            }
             .fileImporter(
                 isPresented: $showingImporter,
-                allowedContentTypes: [.dpbPresentation, .zip],
+                allowedContentTypes: importContentTypes,
                 allowsMultipleSelection: false
             ) { result in
                 handleImport(result)
@@ -73,7 +80,12 @@ struct LibraryView: View {
                 document: exportingBook.map {
                     ExportableBookDocument(packageDirectory: store.packageURL(for: $0.id))
                 },
-                contentType: .dpbPresentation,
+                // `.data` has no preferred extension, so the literal `.dpb`
+                // in `defaultFilename` survives. The runtime-only
+                // `.dpbPresentation` UTI made the system fall back to its
+                // conforming type (`.zip`) and renamed the export `.zip`
+                // because the custom UTI isn't declared in Info.plist.
+                contentType: .data,
                 defaultFilename: exportFilename
             ) { result in
                 if case .failure(let error) = result {
@@ -97,11 +109,33 @@ struct LibraryView: View {
             } message: { book in
                 Text("\"\(book.title)\" will be removed from this device. This can't be undone.")
             }
+            .alert(
+                "Rename Presentation",
+                isPresented: Binding(
+                    get: { renamingBook != nil },
+                    set: { if !$0 { renamingBook = nil } }
+                ),
+                presenting: renamingBook
+            ) { book in
+                TextField("Title", text: $renameDraft)
+                Button("Cancel", role: .cancel) { renamingBook = nil }
+                Button("Save") {
+                    let trimmed = renameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                    var updated = book
+                    updated.title = trimmed.isEmpty ? "Untitled" : trimmed
+                    do {
+                        try store.save(updated)
+                    } catch {
+                        store.lastError = error.localizedDescription
+                    }
+                    renamingBook = nil
+                }
+            } message: { book in
+                Text("Enter a new title for \"\(book.title)\".")
+            }
             .onAppear { store.refresh() }
         }
     }
-
-    // MARK: - Sections
 
     private var createSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -147,10 +181,15 @@ struct LibraryView: View {
                 ForEach(store.books) { book in
                     BookCard(
                         book: book,
+                        package: store.package(for: book),
                         onOpen:   { presentingBook = book },
                         onEdit:   { editingBook = book },
                         onExport: { exportingBook = book },
-                        onDelete: { deletingBook = book }
+                        onDelete: { deletingBook = book },
+                        onRename: {
+                            renameDraft = book.title
+                            renamingBook = book
+                        }
                     )
                 }
             }
@@ -158,10 +197,10 @@ struct LibraryView: View {
     }
 
     private var emptyLibraryHint: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "books.vertical")
-                .font(.system(size: 44))
-                .foregroundStyle(.tertiary)
+        VStack(spacing: 12) {
+            BrandIcon()
+                .frame(width: 88, height: 88)
+                .opacity(0.6)
             Text("No presentations yet")
                 .font(.headline)
             Text("Tap a Create tile above, or import a .dpb file shared by a teammate.")
@@ -188,14 +227,34 @@ struct LibraryView: View {
                 Label("Import", systemImage: "square.and.arrow.down")
             }
             .disabled(!DPBArchive.isAvailable)
+
+            Button {
+                showingAbout = true
+            } label: {
+                Label("About", systemImage: "info.circle")
+            }
         }
     }
 
-    // MARK: - Actions
+    /// Build the import filter at runtime: `.dpbPresentation` is declared via
+    /// `UTType(exportedAs:)` without an Info.plist entry, so the system can't
+    /// match `.dpb` files to it. Synthesizing a UTI from the filename extension
+    /// gives the picker something concrete to filter on, with `.zip` as a
+    /// fallback for files that *do* carry the system zip UTI.
+    private var importContentTypes: [UTType] {
+        var types: [UTType] = [.dpbPresentation, .zip]
+        if let dpb = UTType(filenameExtension: "dpb") {
+            types.insert(dpb, at: 0)
+        }
+        return types
+    }
 
     private var exportFilename: String {
-        guard let book = exportingBook else { return "Presentation" }
-        return book.title.isEmpty ? "Presentation" : book.title
+        let base: String = {
+            guard let book = exportingBook, !book.title.isEmpty else { return "Presentation" }
+            return book.title
+        }()
+        return "\(base).dpb"
     }
 
     private var editBookSubtitle: String {
@@ -209,7 +268,6 @@ struct LibraryView: View {
     private func createBook(from template: BookTemplate, title: String?) {
         do {
             let book = try store.createBook(from: template, title: title)
-            // Jump straight into the editor so the rep can customize.
             editingBook = book
         } catch {
             store.lastError = error.localizedDescription
@@ -219,8 +277,7 @@ struct LibraryView: View {
     private func routeToEdit() {
         switch store.books.count {
         case 0:
-            // Falling through to the New flow makes the tile useful even
-            // before the library has anything in it.
+            // Library empty, fall through to New so the tile still works.
             createBook(from: .blank, title: nil)
         case 1:
             if let only = store.books.first { editingBook = only }
@@ -246,26 +303,22 @@ struct LibraryView: View {
     }
 }
 
-// MARK: - .dpb file type
-
 extension UTType {
-    /// The custom Digital Presentation Book document type. We declare it as
-    /// a subtype of `.zip` so the system file pickers treat it as a single
-    /// file rather than a folder.
+    /// Declared as a subtype of `.zip` so system file pickers treat it as a
+    /// single file rather than a folder.
     static let dpbPresentation: UTType = UTType(
         exportedAs: "com.starholder.digital-presentation-book.dpb",
         conformingTo: .zip
     )
 }
 
-// MARK: - Exporter shim
-
-/// A `FileDocument` that lazily zips a book's package directory into a
-/// transferable .dpb file when the system asks for its bytes. Holds only a
-/// URL so it can run nonisolated when SwiftUI invokes it.
+/// Lazily zips a book's package directory when the system asks for its
+/// bytes. Holds only a URL so SwiftUI can invoke it nonisolated.
 private struct ExportableBookDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.dpbPresentation] }
-    static var writableContentTypes: [UTType] { [.dpbPresentation] }
+    // `.data` matches the `contentType:` we pass to `fileExporter` so the
+    // user-supplied `.dpb` extension survives.
+    static var readableContentTypes: [UTType] { [.data] }
+    static var writableContentTypes: [UTType] { [.data] }
 
     let packageDirectory: URL
 
@@ -286,8 +339,6 @@ private struct ExportableBookDocument: FileDocument {
         return FileWrapper(regularFileWithContents: data)
     }
 }
-
-// MARK: - Cross-platform fullScreenCover
 
 private extension View {
     /// `fullScreenCover` is iOS-only; on macOS we fall back to a regular

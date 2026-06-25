@@ -1,16 +1,9 @@
-//
-//  HardnessCalculatorWidget.swift
-//  Digital Presentation Book
-//
-//  Interactive widget for water-treatment sales calls.
-//
-//  Sales rep enters the prospect's water-hardness reading (grains per gallon)
-//  and household size; the widget shows the severity bucket, estimated
-//  annual hidden costs (soap, detergent, water-heater efficiency loss,
-//  appliance lifespan), and the suggested treatment tier.
-//
-
 import SwiftUI
+
+// Interactive widget for water-treatment sales calls. The rep enters the
+// prospect's hardness reading (GPG) and household size; the widget shows the
+// severity bucket, estimated annual hidden costs, and a suggested treatment
+// tier.
 
 @MainActor
 struct HardnessCalculatorWidget: SlideWidget {

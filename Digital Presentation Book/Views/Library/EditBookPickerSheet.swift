@@ -1,14 +1,3 @@
-//
-//  EditBookPickerSheet.swift
-//  Digital Presentation Book
-//
-//  Modal sheet for the "Edit Book" tile. Lists every existing book; the
-//  caller routes the chosen book into the editor.
-//
-//  Skipped when the library is empty (caller offers creation instead) or
-//  when there's exactly one book (caller opens it directly).
-//
-
 import SwiftUI
 
 struct EditBookPickerSheet: View {

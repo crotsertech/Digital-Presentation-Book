@@ -1,21 +1,9 @@
-//
-//  EditorSlideList.swift
-//  Digital Presentation Book
-//
-//  Sidebar for the editor — ordered list of every slide grouped by chapter.
-//  Tapping a slide selects it; swipes and the chapter-header menu provide
-//  add / delete / rename for chapters and slides. Mutations happen against
-//  the bound `Book` directly so the canvas updates live.
-//
-
 import SwiftUI
 
 struct EditorSlideList: View {
     @Binding var book: Book
     @Binding var currentSlideID: UUID?
 
-    /// Drives the rename alert. When non-nil, the alert is presented and
-    /// the draft text holds the in-progress title.
     @State private var renamingChapter: Chapter?
     @State private var renameDraft: String = ""
 
@@ -24,6 +12,7 @@ struct EditorSlideList: View {
             ForEach(book.chapters) { chapter in
                 chapterSection(chapter)
             }
+            .onMove(perform: moveChapters)
 
             Section {
                 Button {
@@ -54,25 +43,62 @@ struct EditorSlideList: View {
         }
     }
 
-    // MARK: - Sections
-
     private func chapterSection(_ chapter: Chapter) -> some View {
         Section {
             ForEach(Array(chapter.slides.enumerated()), id: \.element.id) { idx, slide in
                 slideRow(chapter: chapter, slide: slide, index: idx)
             }
-
-            Button {
-                addSlide(toChapterID: chapter.id)
-            } label: {
-                Label("Add Slide", systemImage: "plus")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.tint)
+            .onMove { source, destination in
+                moveSlides(in: chapter.id, from: source, to: destination)
             }
-            .buttonStyle(.plain)
+
+            addSlideControl(forChapter: chapter)
         } header: {
             chapterHeader(chapter)
         }
+    }
+
+    /// Plain button when there are no templates; menu with duplicate options when there are.
+    @ViewBuilder
+    private func addSlideControl(forChapter chapter: Chapter) -> some View {
+        let templates = book.allSlides.filter { $0.isTemplate }
+        if templates.isEmpty {
+            Button {
+                addSlide(toChapterID: chapter.id)
+            } label: {
+                addSlideLabel
+            }
+            .buttonStyle(.plain)
+        } else {
+            Menu {
+                Button {
+                    addSlide(toChapterID: chapter.id)
+                } label: {
+                    Label("Blank Slide", systemImage: "plus")
+                }
+                Section("Duplicate from Template") {
+                    ForEach(templates) { template in
+                        Button {
+                            duplicate(template, toChapterID: chapter.id)
+                        } label: {
+                            Label(
+                                template.title.isEmpty ? "Untitled template" : template.title,
+                                systemImage: "bookmark.fill"
+                            )
+                        }
+                    }
+                }
+            } label: {
+                addSlideLabel
+            }
+            .menuStyle(.borderlessButton)
+        }
+    }
+
+    private var addSlideLabel: some View {
+        Label("Add Slide", systemImage: "plus")
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.tint)
     }
 
     private func slideRow(chapter: Chapter, slide: Slide, index: Int) -> some View {
@@ -86,9 +112,23 @@ struct EditorSlideList: View {
                     .frame(minWidth: 22, alignment: .trailing)
                     .padding(.top, 2)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(slide.title.isEmpty ? "Untitled slide" : slide.title)
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(2)
+                    HStack(spacing: 4) {
+                        Text(slide.title.isEmpty ? "Untitled slide" : slide.title)
+                            .font(.subheadline.weight(.medium))
+                            .lineLimit(2)
+                        if slide.isTemplate {
+                            Image(systemName: "bookmark.fill")
+                                .imageScale(.small)
+                                .foregroundStyle(.tint)
+                                .accessibilityLabel("Template slide")
+                        }
+                        if slide.isHidden {
+                            Image(systemName: "eye.slash.fill")
+                                .imageScale(.small)
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel("Hidden from presentation")
+                        }
+                    }
                     Text("\(slide.elements.count) element\(slide.elements.count == 1 ? "" : "s")")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
@@ -96,6 +136,7 @@ struct EditorSlideList: View {
                 Spacer(minLength: 0)
             }
             .contentShape(Rectangle())
+            .opacity(slide.isHidden ? 0.45 : 1)
         }
         .buttonStyle(.plain)
         .listRowBackground(
@@ -111,6 +152,28 @@ struct EditorSlideList: View {
             }
         }
         .contextMenu {
+            Button {
+                duplicate(slide, toChapterID: chapter.id)
+            } label: {
+                Label("Duplicate Slide", systemImage: "plus.square.on.square")
+            }
+            Button {
+                setTemplate(!slide.isTemplate, slideID: slide.id)
+            } label: {
+                Label(
+                    slide.isTemplate ? "Unmark as Template" : "Mark as Template",
+                    systemImage: slide.isTemplate ? "bookmark.slash" : "bookmark"
+                )
+            }
+            Button {
+                setHidden(!slide.isHidden, slideID: slide.id)
+            } label: {
+                Label(
+                    slide.isHidden ? "Show in Presentation" : "Hide from Presentation",
+                    systemImage: slide.isHidden ? "eye" : "eye.slash"
+                )
+            }
+            Divider()
             Button(role: .destructive) {
                 deleteSlide(id: slide.id, in: chapter.id)
             } label: {
@@ -154,8 +217,6 @@ struct EditorSlideList: View {
         }
     }
 
-    // MARK: - Mutations
-
     private func startRename(_ chapter: Chapter) {
         renameDraft = chapter.title
         renamingChapter = chapter
@@ -179,8 +240,41 @@ struct EditorSlideList: View {
         currentSlideID = slide.id
     }
 
-    /// Reroutes `currentSlideID` to a nearby slide before mutating the array
-    /// so the inspector / canvas don't briefly bind to a vanished slide.
+    /// Deep-copies the slide with fresh element UUIDs but shares the underlying
+    /// `AssetReference` so the package's image/video isn't re-imported.
+    private func duplicate(_ source: Slide, toChapterID chapterID: UUID) {
+        guard let idx = book.chapters.firstIndex(where: { $0.id == chapterID }) else { return }
+        var copy = source
+        copy.id = UUID()
+        copy.isTemplate = false
+        copy.elements = source.elements.map { element in
+            var clone = element
+            clone.id = UUID()
+            return clone
+        }
+        book.chapters[idx].slides.append(copy)
+        currentSlideID = copy.id
+    }
+
+    private func setTemplate(_ flag: Bool, slideID: UUID) {
+        for chapterIdx in book.chapters.indices {
+            if let slideIdx = book.chapters[chapterIdx].slides.firstIndex(where: { $0.id == slideID }) {
+                book.chapters[chapterIdx].slides[slideIdx].isTemplate = flag
+                return
+            }
+        }
+    }
+
+    private func setHidden(_ flag: Bool, slideID: UUID) {
+        for chapterIdx in book.chapters.indices {
+            if let slideIdx = book.chapters[chapterIdx].slides.firstIndex(where: { $0.id == slideID }) {
+                book.chapters[chapterIdx].slides[slideIdx].isHidden = flag
+                return
+            }
+        }
+    }
+
+    /// Reroute `currentSlideID` before removing so inspector/canvas don't briefly bind to a vanished slide.
     private func deleteSlide(id slideID: UUID, in chapterID: UUID) {
         guard let chapterIdx = book.chapters.firstIndex(where: { $0.id == chapterID }) else { return }
         guard let slideIdx = book.chapters[chapterIdx].slides.firstIndex(where: { $0.id == slideID }) else { return }
@@ -194,6 +288,15 @@ struct EditorSlideList: View {
                 ?? book.allSlides.first(where: { $0.id != slideID })?.id
         }
         book.chapters[chapterIdx].slides.remove(at: slideIdx)
+    }
+
+    private func moveChapters(from source: IndexSet, to destination: Int) {
+        book.chapters.move(fromOffsets: source, toOffset: destination)
+    }
+
+    private func moveSlides(in chapterID: UUID, from source: IndexSet, to destination: Int) {
+        guard let idx = book.chapters.firstIndex(where: { $0.id == chapterID }) else { return }
+        book.chapters[idx].slides.move(fromOffsets: source, toOffset: destination)
     }
 
     private func addChapter() {

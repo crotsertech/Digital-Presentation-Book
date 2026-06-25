@@ -1,13 +1,3 @@
-//
-//  BookAssetPicker.swift
-//  Digital Presentation Book
-//
-//  Sheet that surfaces every image (or video) asset already imported into
-//  the current book so the rep can reuse it instead of re-uploading. Picking
-//  an entry reuses its `AssetReference` — the underlying file in the package
-//  is shared, so one logical image can appear on many slides without bloat.
-//
-
 import SwiftUI
 
 struct BookAssetPicker: View {
@@ -86,9 +76,7 @@ struct BookAssetPicker: View {
     private var uploadCard: some View {
         Button {
             dismiss()
-            // Defer so the sheet finishes dismissing before the file
-            // importer presents — stacking presentations on the same frame
-            // can no-op silently.
+            // Defer so the sheet finishes dismissing. Stacking presentations on the same frame can no-op.
             DispatchQueue.main.async {
                 onUploadNew()
             }
@@ -114,9 +102,8 @@ struct BookAssetPicker: View {
         .buttonStyle(.plain)
     }
 
-    /// All unique assets of the requested kind referenced anywhere in the
-    /// book — slide images, slide backgrounds, and (for video kind) video
-    /// elements. Deduplicated by `AssetReference.id`.
+    /// Unique assets of the requested kind referenced anywhere in the book,
+    /// deduplicated by `AssetReference.id`.
     private var assets: [AssetReference] {
         var seen: Set<UUID> = []
         var out: [AssetReference] = []

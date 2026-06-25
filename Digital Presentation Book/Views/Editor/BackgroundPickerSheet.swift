@@ -1,12 +1,3 @@
-//
-//  BackgroundPickerSheet.swift
-//  Digital Presentation Book
-//
-//  Modal that lets the user swap the current slide's background. Offers
-//  curated water-themed presets (gradients + solids) and a "Choose Photo"
-//  option that triggers an image file picker handled by the editor.
-//
-
 import SwiftUI
 
 struct BackgroundPickerSheet: View {
@@ -14,8 +5,21 @@ struct BackgroundPickerSheet: View {
     let currentBackground: SlideBackground
     var onSelectPreset: (BackgroundPreset) -> Void
     var onUploadImage: () -> Void
+    var onChooseExistingImage: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+
+    private var hasReusableImages: Bool {
+        for slide in book.allSlides {
+            if case .image = slide.background { return true }
+            if slide.elements.contains(where: {
+                if case .image = $0.content { return true } else { return false }
+            }) {
+                return true
+            }
+        }
+        return false
+    }
 
     private let columns = [
         GridItem(.adaptive(minimum: 160, maximum: 220), spacing: 14)
@@ -43,43 +47,67 @@ struct BackgroundPickerSheet: View {
         .presentationDetents([.medium, .large])
     }
 
-    // MARK: - Photo
-
     private var photoSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader("Photo", systemImage: "photo.on.rectangle.angled")
-            Button {
+
+            if hasReusableImages {
+                photoRow(
+                    title: "Reuse image from this book…",
+                    subtitle: "Pick from images you've already added. No re-upload needed.",
+                    systemImage: "rectangle.stack",
+                    tint: .teal
+                ) {
+                    onChooseExistingImage()
+                    dismiss()
+                }
+            }
+
+            photoRow(
+                title: "Choose photo from Files…",
+                subtitle: "The image is copied into the .dpb package so it stays available offline.",
+                systemImage: "square.and.arrow.up",
+                tint: .indigo
+            ) {
                 onUploadImage()
                 dismiss()
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.title3)
-                        .foregroundStyle(.white)
-                        .frame(width: 36, height: 36)
-                        .background(.indigo, in: RoundedRectangle(cornerRadius: 9))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Choose photo from Files…")
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                        Text("The image is copied into the .dpb package so it stays available offline.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(12)
-                .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
             }
-            .buttonStyle(.plain)
         }
     }
 
-    // MARK: - Presets
+    private func photoRow(
+        title: String,
+        subtitle: String,
+        systemImage: String,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(tint, in: RoundedRectangle(cornerRadius: 9))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(12)
+            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
 
     private var presetsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -105,14 +133,10 @@ struct BackgroundPickerSheet: View {
             .foregroundStyle(.primary)
     }
 
-    /// Best-effort: does the currently selected preset produce the slide's
-    /// current background? Used to mark the "current" card with a check.
     private func matches(_ preset: BackgroundPreset) -> Bool {
         preset.makeBackground(book: book) == currentBackground
     }
 }
-
-// MARK: - Card
 
 private struct PresetCard: View {
     let preset: BackgroundPreset

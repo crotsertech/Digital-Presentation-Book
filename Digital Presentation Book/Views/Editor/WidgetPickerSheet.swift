@@ -1,11 +1,3 @@
-//
-//  WidgetPickerSheet.swift
-//  Digital Presentation Book
-//
-//  Modal sheet listing every widget the WidgetRegistry knows about.
-//  Tapping one returns its metatype so the editor can insert it.
-//
-
 import SwiftUI
 
 struct WidgetPickerSheet: View {

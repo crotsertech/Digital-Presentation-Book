@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Every registrable interactive widget conforms to this. Widgets stay
-/// stateless about their document position — they only know how to render
+/// stateless about their document position. They only know how to render
 /// and react to user interaction.
 @MainActor
 protocol SlideWidget {

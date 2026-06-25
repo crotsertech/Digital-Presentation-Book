@@ -4,7 +4,7 @@ import SwiftUI
 /// Document-format version. Bump on breaking changes to `manifest.json`.
 let kDPBFormatVersion: Int = 1
 
-/// Each ratio carries a `nominalSize` — the design-time point grid the slide
+/// Each ratio carries a `nominalSize`, the design-time point grid the slide
 /// is laid out in. Renderers scale absolute-point values (font, stroke,
 /// corner radius) by `actualHeight / nominalHeight`, so a book authored on a
 /// Mac at 1920pt wide looks the same when projected on an iPad at 1024pt.
@@ -23,7 +23,7 @@ enum BookAspectRatio: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// 1024×768 mirrors the iPad's native point grid — the target hardware
+    /// 1024×768 mirrors the iPad's native point grid, the target hardware
     /// for these presentations.
     var nominalSize: CGSize {
         switch self {
@@ -101,12 +101,12 @@ struct Book: Codable, Identifiable, Hashable, Sendable {
         self.formatVersion = formatVersion
     }
 
-    /// All slides in order, including hidden ones — used by the editor.
+    /// All slides in order, including hidden ones. Used by the editor.
     var allSlides: [Slide] {
         chapters.flatMap { $0.slides }
     }
 
-    /// Slides the player should show — hidden ones filtered out.
+    /// Slides the player should show. Hidden ones filtered out.
     var presentableSlides: [Slide] {
         chapters.flatMap { $0.slides }.filter { !$0.isHidden }
     }

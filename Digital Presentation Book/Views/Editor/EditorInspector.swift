@@ -1,31 +1,29 @@
-//
-//  EditorInspector.swift
-//  Digital Presentation Book
-//
-//  Properties panel shown to the right of the canvas when an element is
-//  selected. Each section is bound directly to the selected element so
-//  edits live-preview on the canvas without explicit "Apply".
-//
-
 import SwiftUI
 
 struct EditorInspector: View {
     @Binding var element: SlideElement
     let book: Book
+    let package: DPBPackage
     var onDelete: () -> Void
+    var onDuplicate: () -> Void
+    var onBringForward: () -> Void
+    var onSendBackward: () -> Void
+    var onBringToFront: () -> Void
+    var onSendToBack: () -> Void
+    var onRequestImageReplaceUpload: () -> Void
+    var onRequestVideoReplaceUpload: () -> Void
 
     var body: some View {
         Form {
             headerSection
             layoutSection
+            arrangeSection
             typeSpecificSection
             dangerSection
         }
         .formStyle(.grouped)
         .navigationTitle("Inspector")
     }
-
-    // MARK: - Header
 
     private var headerSection: some View {
         Section {
@@ -48,29 +46,28 @@ struct EditorInspector: View {
         }
     }
 
-    // MARK: - Layout
-
     private var layoutSection: some View {
         Section("Layout") {
             percentSlider(
                 title: "X",
                 value: $element.frame.x,
-                in: -0.5...1.0
+                in: -1.0...2.0
             )
             percentSlider(
                 title: "Y",
                 value: $element.frame.y,
-                in: -0.5...1.0
+                in: -1.0...2.0
             )
+            // Allow >100% so decorative shapes can bleed off the slide.
             percentSlider(
                 title: "Width",
                 value: $element.frame.width,
-                in: 0.03...1.0
+                in: 0.03...3.0
             )
             percentSlider(
                 title: "Height",
                 value: $element.frame.height,
-                in: 0.03...1.0
+                in: 0.03...3.0
             )
 
             HStack {
@@ -95,7 +92,44 @@ struct EditorInspector: View {
         }
     }
 
-    // MARK: - Type-specific
+    private var arrangeSection: some View {
+        Section("Arrange") {
+            Button {
+                onDuplicate()
+            } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+            }
+            .keyboardShortcut("d", modifiers: [.command])
+
+            Button {
+                onBringForward()
+            } label: {
+                Label("Bring Forward", systemImage: "square.2.layers.3d.top.filled")
+            }
+            .keyboardShortcut("]", modifiers: [.command])
+
+            Button {
+                onSendBackward()
+            } label: {
+                Label("Send Backward", systemImage: "square.2.layers.3d.bottom.filled")
+            }
+            .keyboardShortcut("[", modifiers: [.command])
+
+            Button {
+                onBringToFront()
+            } label: {
+                Label("Bring to Front", systemImage: "square.3.layers.3d.top.filled")
+            }
+            .keyboardShortcut("]", modifiers: [.command, .shift])
+
+            Button {
+                onSendToBack()
+            } label: {
+                Label("Send to Back", systemImage: "square.3.layers.3d.bottom.filled")
+            }
+            .keyboardShortcut("[", modifiers: [.command, .shift])
+        }
+    }
 
     @ViewBuilder
     private var typeSpecificSection: some View {
@@ -110,11 +144,21 @@ struct EditorInspector: View {
             }
         case .image:
             if let binding = imageBinding {
-                ImageInspectorSection(data: binding)
+                ImageInspectorSection(
+                    data: binding,
+                    book: book,
+                    package: package,
+                    onRequestNewUpload: onRequestImageReplaceUpload
+                )
             }
         case .video:
             if let binding = videoBinding {
-                VideoInspectorSection(data: binding)
+                VideoInspectorSection(
+                    data: binding,
+                    book: book,
+                    package: package,
+                    onRequestNewUpload: onRequestVideoReplaceUpload
+                )
             }
         case .widget:
             if let binding = widgetBinding {
@@ -122,8 +166,6 @@ struct EditorInspector: View {
             }
         }
     }
-
-    // MARK: - Danger
 
     private var dangerSection: some View {
         Section {
@@ -135,8 +177,6 @@ struct EditorInspector: View {
             }
         }
     }
-
-    // MARK: - Helpers
 
     @ViewBuilder
     private func percentSlider(
@@ -184,8 +224,6 @@ struct EditorInspector: View {
         }
     }
 
-    // MARK: - Bindings into the discriminated content enum
-
     private var textBinding: Binding<TextElementData>? {
         guard case .text(let data) = element.content else { return nil }
         return Binding(
@@ -227,8 +265,6 @@ struct EditorInspector: View {
     }
 }
 
-// MARK: - Text
-
 private struct TextInspectorSection: View {
     @Binding var data: TextElementData
 
@@ -236,6 +272,14 @@ private struct TextInspectorSection: View {
         Section("Text") {
             TextField("Content", text: $data.string, axis: .vertical)
                 .lineLimit(3...8)
+
+            Picker("Font", selection: fontSelection) {
+                ForEach(FontCatalog.pickerOptions) { option in
+                    Text(option.displayName)
+                        .font(option.postScriptName.map { Font.custom($0, size: 15) } ?? .body)
+                        .tag(option.postScriptName as String?)
+                }
+            }
 
             HStack {
                 Text("Size")
@@ -271,6 +315,13 @@ private struct TextInspectorSection: View {
             ColorPicker("Color", selection: rgbaBinding($data.color), supportsOpacity: true)
         }
     }
+
+    private var fontSelection: Binding<String?> {
+        Binding(
+            get: { data.fontFamily },
+            set: { data.fontFamily = $0 }
+        )
+    }
 }
 
 private extension TextElementData.TextWeight {
@@ -284,8 +335,6 @@ private extension TextElementData.TextWeight {
         }
     }
 }
-
-// MARK: - Shape
 
 private struct ShapeInspectorSection: View {
     @Binding var data: ShapeElementData
@@ -343,10 +392,13 @@ private struct ShapeInspectorSection: View {
     }
 }
 
-// MARK: - Image
-
 private struct ImageInspectorSection: View {
     @Binding var data: ImageElementData
+    let book: Book
+    let package: DPBPackage
+    var onRequestNewUpload: () -> Void
+
+    @State private var showingPicker = false
 
     var body: some View {
         Section("Image") {
@@ -356,6 +408,12 @@ private struct ImageInspectorSection: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
+            }
+
+            Button {
+                showingPicker = true
+            } label: {
+                Label("Replace…", systemImage: "arrow.triangle.2.circlepath")
             }
 
             Picker("Fill", selection: $data.fill) {
@@ -373,13 +431,29 @@ private struct ImageInspectorSection: View {
             }
             Slider(value: $data.cornerRadius, in: 0...120, step: 1)
         }
+        .sheet(isPresented: $showingPicker) {
+            BookAssetPicker(
+                book: book,
+                package: package,
+                kind: .image,
+                onSelect: { asset in
+                    data.asset = asset
+                },
+                onUploadNew: {
+                    onRequestNewUpload()
+                }
+            )
+        }
     }
 }
 
-// MARK: - Video
-
 private struct VideoInspectorSection: View {
     @Binding var data: VideoElementData
+    let book: Book
+    let package: DPBPackage
+    var onRequestNewUpload: () -> Void
+
+    @State private var showingPicker = false
 
     var body: some View {
         Section("Video") {
@@ -390,15 +464,31 @@ private struct VideoInspectorSection: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
+            Button {
+                showingPicker = true
+            } label: {
+                Label("Replace…", systemImage: "arrow.triangle.2.circlepath")
+            }
             Toggle("Autoplay", isOn: $data.autoplay)
             Toggle("Loop", isOn: $data.loops)
             Toggle("Muted", isOn: $data.muted)
             Toggle("Show controls", isOn: $data.showsControls)
         }
+        .sheet(isPresented: $showingPicker) {
+            BookAssetPicker(
+                book: book,
+                package: package,
+                kind: .video,
+                onSelect: { asset in
+                    data.asset = asset
+                },
+                onUploadNew: {
+                    onRequestNewUpload()
+                }
+            )
+        }
     }
 }
-
-// MARK: - Widget
 
 private struct WidgetInspectorSection: View {
     @Binding var data: WidgetElementData
@@ -427,8 +517,7 @@ private struct WidgetInspectorSection: View {
                     .truncationMode(.middle)
             }
 
-            // Parameter editing is widget-specific — full editor lands in
-            // a future slice. For now we surface a read-only summary.
+            // Read-only summary; full per-widget parameter editor lands later.
             if data.parameters.isEmpty {
                 Text("No configurable parameters.")
                     .font(.caption)
@@ -455,16 +544,12 @@ private struct WidgetInspectorSection: View {
         case .number(let n):       return String(format: "%g", n)
         case .bool(let b):         return b ? "true" : "false"
         case .stringList(let arr): return "[\(arr.count)]"
-        case .none:                return "—"
+        case .none:                return "(unset)"
         }
     }
 }
 
-// MARK: - Color binding helper
-
-/// Bridges a `RGBAColor` field (Codable, sRGB scalars) to SwiftUI's
-/// platform `Color` type used by `ColorPicker`. Round-trips through
-/// `CGColor` so we preserve the picker's opacity choice.
+/// Round-trip through `CGColor` so the `ColorPicker`'s opacity choice is preserved.
 private func rgbaBinding(_ source: Binding<RGBAColor>) -> Binding<Color> {
     Binding(
         get: { source.wrappedValue.color },

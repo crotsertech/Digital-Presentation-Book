@@ -1,11 +1,3 @@
-//
-//  ChapterSidebar.swift
-//  Digital Presentation Book
-//
-//  Collapsible list of chapters and slides shown on the leading edge of the
-//  player. Tapping a slide jumps the player to it.
-//
-
 import SwiftUI
 
 struct ChapterSidebar: View {
@@ -16,8 +8,9 @@ struct ChapterSidebar: View {
     var body: some View {
         List {
             ForEach(book.chapters) { chapter in
+                let visible = chapter.slides.filter { !$0.isHidden }
                 Section {
-                    ForEach(Array(chapter.slides.enumerated()), id: \.element.id) { idx, slide in
+                    ForEach(Array(visible.enumerated()), id: \.element.id) { idx, slide in
                         Button {
                             onSelectSlide(slide.id)
                         } label: {

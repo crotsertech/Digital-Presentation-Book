@@ -1,12 +1,3 @@
-//
-//  BackgroundPresets.swift
-//  Digital Presentation Book
-//
-//  Curated slide backgrounds picked to feel right for a water-treatment
-//  sales presentation: lots of cool blues, soft mist gradients, and a
-//  couple of darker hero variants for title slides.
-//
-
 import Foundation
 import SwiftUI
 
@@ -65,9 +56,6 @@ enum BackgroundPreset: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    // MARK: - Background producer
-
-    /// Concrete `SlideBackground` ready to assign to a slide.
     func makeBackground(book: Book) -> SlideBackground {
         switch self {
         case .themeDefault:

@@ -1,14 +1,9 @@
-//
-//  EditorCanvas.swift
-//  Digital Presentation Book
-//
-//  Editable version of SlideCanvas. Each element renders at its own frame
-//  (positioned via `.offset` from the top-leading corner of the canvas)
-//  so hit testing is per-element. Using `.position` would cause every
-//  element to occupy the whole canvas as a tap target.
-//
-
 import SwiftUI
+
+// Editable counterpart to SlideCanvas. Elements are positioned with
+// `.offset` (not `.position`) so each one's hit target stays at its own
+// bounds. Otherwise every element would absorb taps across the whole
+// canvas and selection would be unusable.
 
 struct EditorCanvas: View {
     @Binding var slide: Slide
@@ -16,14 +11,19 @@ struct EditorCanvas: View {
     let package: DPBPackage
     @Binding var selectedElementID: UUID?
 
+    /// Stored in normalized canvas coords so the guide overlay scales
+    /// correctly when the canvas is resized.
+    @State private var snapGuides: SnapGuides?
+
     var body: some View {
         GeometryReader { proxy in
             let canvas = canvasSize(in: proxy.size)
+            let scale = canvas.height / book.aspectRatio.nominalSize.height
             HStack {
                 Spacer(minLength: 0)
                 VStack {
                     Spacer(minLength: 0)
-                    canvasContent(size: canvas)
+                    canvasContent(size: canvas, scale: scale)
                         .frame(width: canvas.width, height: canvas.height)
                     Spacer(minLength: 0)
                 }
@@ -32,8 +32,9 @@ struct EditorCanvas: View {
         }
     }
 
-    private func canvasContent(size: CGSize) -> some View {
-        ZStack(alignment: .topLeading) {
+    private func canvasContent(size: CGSize, scale: CGFloat) -> some View {
+        let allElements = slide.elements
+        return ZStack(alignment: .topLeading) {
             background
                 .frame(width: size.width, height: size.height)
                 .contentShape(Rectangle())
@@ -46,18 +47,25 @@ struct EditorCanvas: View {
                 EditableElementView(
                     element: $element,
                     canvasSize: size,
+                    canvasScale: scale,
                     package: package,
                     isSelected: selectedElementID == element.id,
-                    onSelect: { selectedElementID = element.id }
+                    siblings: allElements.filter { $0.id != element.id },
+                    onSelect: { selectedElementID = element.id },
+                    onSnapUpdate: { snapGuides = $0 }
                 )
                 .frame(width: rect.width, height: rect.height)
                 .offset(x: rect.minX, y: rect.minY)
+            }
+
+            if let guides = snapGuides {
+                snapOverlay(guides: guides, canvasSize: size)
             }
         }
         .frame(width: size.width, height: size.height)
         .clipped()
         .overlay(alignment: .bottomTrailing) {
-            Text("\(Int(size.width)) × \(Int(size.height))")
+            Text("\(Int(size.width)) × \(Int(size.height)) • iPad nominal \(Int(book.aspectRatio.nominalSize.width))×\(Int(book.aspectRatio.nominalSize.height))")
                 .font(.caption2.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .padding(6)
@@ -90,6 +98,25 @@ struct EditorCanvas: View {
         }
     }
 
+    @ViewBuilder
+    private func snapOverlay(guides: SnapGuides, canvasSize size: CGSize) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(guides.verticals, id: \.self) { x in
+                Rectangle()
+                    .fill(Color.pink)
+                    .frame(width: 1, height: size.height)
+                    .offset(x: x * size.width)
+            }
+            ForEach(guides.horizontals, id: \.self) { y in
+                Rectangle()
+                    .fill(Color.pink)
+                    .frame(width: size.width, height: 1)
+                    .offset(y: y * size.height)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
     private func canvasSize(in available: CGSize) -> CGSize {
         let ratio = book.aspectRatio.ratio
         let widthIfHeightFits = available.height * ratio
@@ -111,26 +138,26 @@ struct EditorCanvas: View {
     }
 }
 
-// MARK: - Editable element
-
-/// Wraps a `SlideElementView` with interaction overlays: a halo when
-/// selected, four corner resize handles, and a drag gesture for moving.
-/// The element is sized by its parent — gestures cover only its own
-/// bounds so taps on empty canvas area fall through to deselect.
+/// Wraps a `SlideElementView` with selection halo, resize handles, and a
+/// drag gesture. Gestures are scoped to the element's own bounds so taps on
+/// empty canvas fall through to the deselect handler.
 private struct EditableElementView: View {
     @Binding var element: SlideElement
     let canvasSize: CGSize
+    let canvasScale: CGFloat
     let package: DPBPackage
     let isSelected: Bool
+    let siblings: [SlideElement]
     let onSelect: () -> Void
+    let onSnapUpdate: (SnapGuides?) -> Void
 
-    /// The element's frame at the moment a gesture began. We add deltas to
-    /// this rather than the live frame so the motion doesn't compound.
+    /// Anchored to the frame at gesture-start so deltas don't compound
+    /// against the live frame mid-drag.
     @State private var dragStartFrame: NormalizedRect?
 
     var body: some View {
         ZStack {
-            SlideElementView(element: element, package: package)
+            SlideElementView(element: element, package: package, canvasScale: canvasScale)
                 .allowsHitTesting(false)
 
             if isSelected {
@@ -160,18 +187,27 @@ private struct EditableElementView: View {
                 guard let start = dragStartFrame else { return }
                 let dxN = value.translation.width / canvasSize.width
                 let dyN = value.translation.height / canvasSize.height
-                element.frame.x = clamp(start.x + dxN, min: -start.width * 0.5, max: 1 - start.width * 0.5)
-                element.frame.y = clamp(start.y + dyN, min: -start.height * 0.5, max: 1 - start.height * 0.5)
+                // Clamp is generous so off-canvas bleed placement still
+                // works, but bounded so a wild fling can't fly to infinity.
+                let rawX = clamp(start.x + dxN, min: -2.0, max: 2.0)
+                let rawY = clamp(start.y + dyN, min: -2.0, max: 2.0)
+                let snapped = snapMove(
+                    x: rawX, y: rawY,
+                    width: start.width, height: start.height,
+                    siblings: siblings,
+                    canvasSize: canvasSize
+                )
+                element.frame.x = snapped.x
+                element.frame.y = snapped.y
+                onSnapUpdate(snapped.guides.isEmpty ? nil : snapped.guides)
             }
             .onEnded { _ in
                 dragStartFrame = nil
+                onSnapUpdate(nil)
             }
     }
 }
 
-// MARK: - Resize handles
-
-/// Four corner handles overlaid on top of the selected element.
 private struct ResizeHandles: View {
     @Binding var element: SlideElement
     let canvasSize: CGSize
@@ -188,8 +224,8 @@ private struct ResizeHandles: View {
             handle(.bottomLeading)
             handle(.bottomTrailing)
         }
-        // Let the handles spill outside the element's frame so they're
-        // easy to grab when the element is small.
+        // Spill the handles outside the element so they remain grabbable
+        // when the element is small.
         .padding(-handleSize / 2)
     }
 
@@ -264,7 +300,80 @@ private struct ResizeHandles: View {
     }
 }
 
-// MARK: - Utility
+/// Vertical and horizontal alignment lines, in normalized canvas coords.
+struct SnapGuides: Equatable {
+    var verticals: [Double] = []
+    var horizontals: [Double] = []
+
+    var isEmpty: Bool { verticals.isEmpty && horizontals.isEmpty }
+}
+
+private struct SnappedMove {
+    var x: Double
+    var y: Double
+    var guides: SnapGuides
+}
+
+/// Snaps the moving element's leading/center/trailing and top/center/bottom
+/// edges to the canvas edges/center and to sibling element edges, within a
+/// few-point pixel threshold. Returns the adjusted x/y plus guide lines so
+/// the canvas overlay can show which edge is aligning.
+private func snapMove(
+    x: Double, y: Double,
+    width: Double, height: Double,
+    siblings: [SlideElement],
+    canvasSize: CGSize,
+    thresholdPt: CGFloat = 6
+) -> SnappedMove {
+    let thresholdX = Double(thresholdPt) / Double(canvasSize.width)
+    let thresholdY = Double(thresholdPt) / Double(canvasSize.height)
+
+    var xTargets: [Double] = [0, 0.5, 1.0]
+    var yTargets: [Double] = [0, 0.5, 1.0]
+    for s in siblings {
+        let f = s.frame
+        xTargets.append(contentsOf: [f.x, f.x + f.width / 2, f.x + f.width])
+        yTargets.append(contentsOf: [f.y, f.y + f.height / 2, f.y + f.height])
+    }
+
+    let myXs = [x, x + width / 2, x + width]
+    let myYs = [y, y + height / 2, y + height]
+
+    let xBest = closestSnap(myEdges: myXs, targets: xTargets, threshold: thresholdX)
+    let yBest = closestSnap(myEdges: myYs, targets: yTargets, threshold: thresholdY)
+
+    var guides = SnapGuides()
+    var newX = x, newY = y
+    if let xBest {
+        newX = x + xBest.delta
+        guides.verticals = [xBest.target]
+    }
+    if let yBest {
+        newY = y + yBest.delta
+        guides.horizontals = [yBest.target]
+    }
+    return SnappedMove(x: newX, y: newY, guides: guides)
+}
+
+private struct SnapHit {
+    var delta: Double
+    var target: Double
+}
+
+private func closestSnap(myEdges: [Double], targets: [Double], threshold: Double) -> SnapHit? {
+    var best: SnapHit?
+    for edge in myEdges {
+        for target in targets {
+            let delta = target - edge
+            if abs(delta) <= threshold {
+                if best == nil || abs(delta) < abs(best!.delta) {
+                    best = SnapHit(delta: delta, target: target)
+                }
+            }
+        }
+    }
+    return best
+}
 
 private func clamp(_ value: Double, min lo: Double, max hi: Double) -> Double {
     Swift.min(Swift.max(value, lo), hi)

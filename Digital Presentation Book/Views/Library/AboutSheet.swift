@@ -57,7 +57,7 @@ struct AboutSheet: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Nothing leaves this device")
                         .font(.subheadline.weight(.semibold))
-                    Text("No analytics, no crash reports, no device telemetry, no bug-report uploads — ever. Your presentations and edits stay on this device.")
+                    Text("No analytics, no crash reports, no device telemetry, no bug-report uploads. Ever. Your presentations and edits stay on this device.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -122,8 +122,8 @@ struct AboutSheet: View {
 
     private var versionString: String {
         let info = Bundle.main.infoDictionary
-        let version = info?["CFBundleShortVersionString"] as? String ?? "—"
-        let build = info?["CFBundleVersion"] as? String ?? "—"
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
         return "Version \(version) (\(build))"
     }
 }

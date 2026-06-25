@@ -6,7 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		674E8D7F2FE8DF1F009EF151 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 674E8D7E2FE8DF1F009EF151 /* ZIPFoundation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		674E8D082FE89DC6009EF151 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
+		674E8D092FE89DC7009EF151 /* Chapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter.swift; sourceTree = "<group>"; };
+		674E8D0A2FE89DC7009EF151 /* Slide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Slide.swift; sourceTree = "<group>"; };
+		674E8D0B2FE89DC8009EF151 /* SlideElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideElement.swift; sourceTree = "<group>"; };
+		674E8D0C2FE89DC8009EF151 /* Primitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Primitives.swift; sourceTree = "<group>"; };
+		674E8D0D2FE89DC9009EF151 /* AssetReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetReference.swift; sourceTree = "<group>"; };
+		674E8D0E2FE89E05009EF151 /* DPBPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPBPackage.swift; sourceTree = "<group>"; };
+		674E8D0F2FE89E05009EF151 /* DPBArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPBArchive.swift; sourceTree = "<group>"; };
+		674E8D102FE89E05009EF151 /* BookStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookStore.swift; sourceTree = "<group>"; };
+		674E8D112FE89E3D009EF151 /* SlideWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideWidget.swift; sourceTree = "<group>"; };
+		674E8D122FE89E3D009EF151 /* WidgetRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetRegistry.swift; sourceTree = "<group>"; };
+		674E8D132FE89E3E009EF151 /* HardnessCalculatorWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardnessCalculatorWidget.swift; sourceTree = "<group>"; };
+		674E8D142FE89E7B009EF151 /* SlideElementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideElementView.swift; sourceTree = "<group>"; };
+		674E8D152FE89E7B009EF151 /* SlideCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideCanvas.swift; sourceTree = "<group>"; };
+		674E8D162FE89E7B009EF151 /* ChapterSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterSidebar.swift; sourceTree = "<group>"; };
+		674E8D172FE89E7C009EF151 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		674E8D182FE89EDD009EF151 /* SampleBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleBook.swift; sourceTree = "<group>"; };
+		674E8D192FE89EDE009EF151 /* BookCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCard.swift; sourceTree = "<group>"; };
+		674E8D1A2FE89EDE009EF151 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		67FA9E582FE5D8850075C920 /* Digital Presentation Book.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Digital Presentation Book.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -23,17 +46,101 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				674E8D7F2FE8DF1F009EF151 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		674E8D002FE89D88009EF151 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D082FE89DC6009EF151 /* Book.swift */,
+				674E8D092FE89DC7009EF151 /* Chapter.swift */,
+				674E8D0A2FE89DC7009EF151 /* Slide.swift */,
+				674E8D0B2FE89DC8009EF151 /* SlideElement.swift */,
+				674E8D0C2FE89DC8009EF151 /* Primitives.swift */,
+				674E8D0D2FE89DC9009EF151 /* AssetReference.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		674E8D012FE89D88009EF151 /* Document */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D0E2FE89E05009EF151 /* DPBPackage.swift */,
+				674E8D0F2FE89E05009EF151 /* DPBArchive.swift */,
+				674E8D102FE89E05009EF151 /* BookStore.swift */,
+			);
+			path = Document;
+			sourceTree = "<group>";
+		};
+		674E8D022FE89D89009EF151 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D032FE89D89009EF151 /* Library */,
+				674E8D042FE89D8A009EF151 /* Player */,
+				674E8D052FE89D8A009EF151 /* Elements */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		674E8D032FE89D89009EF151 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D192FE89EDE009EF151 /* BookCard.swift */,
+				674E8D1A2FE89EDE009EF151 /* LibraryView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		674E8D042FE89D8A009EF151 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D152FE89E7B009EF151 /* SlideCanvas.swift */,
+				674E8D162FE89E7B009EF151 /* ChapterSidebar.swift */,
+				674E8D172FE89E7C009EF151 /* PlayerView.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
+		674E8D052FE89D8A009EF151 /* Elements */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D142FE89E7B009EF151 /* SlideElementView.swift */,
+			);
+			path = Elements;
+			sourceTree = "<group>";
+		};
+		674E8D062FE89D8B009EF151 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D112FE89E3D009EF151 /* SlideWidget.swift */,
+				674E8D122FE89E3D009EF151 /* WidgetRegistry.swift */,
+				674E8D132FE89E3E009EF151 /* HardnessCalculatorWidget.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		674E8D072FE89D8B009EF151 /* Samples */ = {
+			isa = PBXGroup;
+			children = (
+				674E8D182FE89EDD009EF151 /* SampleBook.swift */,
+			);
+			path = Samples;
+			sourceTree = "<group>";
+		};
 		67FA9E4F2FE5D8850075C920 = {
 			isa = PBXGroup;
 			children = (
 				67FA9E5A2FE5D8850075C920 /* Digital Presentation Book */,
 				67FA9E592FE5D8850075C920 /* Products */,
+				674E8D002FE89D88009EF151 /* Models */,
+				674E8D012FE89D88009EF151 /* Document */,
+				674E8D022FE89D89009EF151 /* Views */,
+				674E8D062FE89D8B009EF151 /* Widgets */,
+				674E8D072FE89D8B009EF151 /* Samples */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,6 +172,7 @@
 			);
 			name = "Digital Presentation Book";
 			packageProductDependencies = (
+				674E8D7E2FE8DF1F009EF151 /* ZIPFoundation */,
 			);
 			productName = "Digital Presentation Book";
 			productReference = 67FA9E582FE5D8850075C920 /* Digital Presentation Book.app */;
@@ -94,6 +202,9 @@
 			);
 			mainGroup = 67FA9E4F2FE5D8850075C920;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				674E8D7D2FE8DF1F009EF151 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 67FA9E592FE5D8850075C920 /* Products */;
 			projectDirPath = "";
@@ -252,10 +363,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = a;
 				DEVELOPMENT_TEAM = G6623K8SSL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -265,16 +377,18 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "Starholder-Softworks.Digital-Presentation-Book";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
@@ -284,10 +398,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = a;
 				DEVELOPMENT_TEAM = G6623K8SSL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -297,16 +412,18 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "Starholder-Softworks.Digital-Presentation-Book";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
 		};
@@ -332,6 +449,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		674E8D7D2FE8DF1F009EF151 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.20;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		674E8D7E2FE8DF1F009EF151 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 674E8D7D2FE8DF1F009EF151 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 67FA9E502FE5D8850075C920 /* Project object */;
 }

@@ -1,12 +1,3 @@
-//
-//  CreateBookCard.swift
-//  Digital Presentation Book
-//
-//  Action tile shown in the Library's "Create" section. Visually distinct
-//  from a real book card — dashed border and a single big icon — so the
-//  user can tell creation actions from existing-book cards at a glance.
-//
-
 import SwiftUI
 
 struct CreateBookCard: View {

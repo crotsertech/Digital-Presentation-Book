@@ -1,19 +1,10 @@
-//
-//  SampleBook.swift
-//  Digital Presentation Book
-//
-//  A built-in starter presentation so the app has something to demo on
-//  first launch. It exercises every element type (text, shape, widget) at
-//  least once.
-//
-
 import Foundation
 import SwiftUI
 
 enum SampleBook {
 
     static func make() -> Book {
-        let theme = BookTheme.kineticoInspired
+        let theme = BookTheme.waterworks
 
         let intro = Chapter(
             title: "Welcome",
@@ -37,7 +28,7 @@ enum SampleBook {
 
         let solution = Chapter(
             title: "The Solution",
-            summary: "Introduce the Kinetico equipment lineup.",
+            summary: "Introduce the Hydrotech / Canature WaterGroup lineup.",
             accentColor: RGBAColor(red: 0.27, green: 0.66, blue: 0.32),
             slides: [
                 solutionOverviewSlide(theme: theme),
@@ -53,8 +44,6 @@ enum SampleBook {
             chapters: [intro, problem, solution]
         )
     }
-
-    // MARK: - Slide factories
 
     private static func titleSlide(theme: BookTheme) -> Slide {
         Slide(
@@ -80,7 +69,7 @@ enum SampleBook {
                 SlideElement(
                     frame: NormalizedRect(x: 0.07, y: 0.52, width: 0.86, height: 0.08),
                     content: .text(TextElementData(
-                        string: "A free, no-obligation water analysis with your local Kinetico specialist.",
+                        string: "A free, no-obligation water analysis from your local Hydrotech / Canature WaterGroup dealer.",
                         fontSize: 28,
                         fontWeight: .medium,
                         color: RGBAColor(white: 1.0, alpha: 0.88),
@@ -135,8 +124,8 @@ enum SampleBook {
                         string:
                             "1. A quick look at your home's water test results\n" +
                             "2. What hard water actually costs you each year\n" +
-                            "3. The Kinetico solution that fits your home\n" +
-                            "4. Your questions — and next steps",
+                            "3. The Hydrotech / Canature WaterGroup solution that fits your home\n" +
+                            "4. Your questions, and next steps",
                         fontSize: 32,
                         fontWeight: .medium,
                         color: theme.defaultTextColor,
@@ -168,7 +157,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.22, width: 0.86, height: 0.18),
                     content: .text(TextElementData(
                         string:
-                            "\"Hard\" water carries dissolved minerals — mostly calcium and magnesium — " +
+                            "\"Hard\" water carries dissolved minerals (mostly calcium and magnesium) " +
                             "picked up as rain water moves through the ground. Those minerals are " +
                             "harmless to drink, but they wreak havoc on your plumbing, your appliances, " +
                             "and your skin.",
@@ -252,7 +241,7 @@ enum SampleBook {
     private static func hardnessCalculatorSlide(theme: BookTheme) -> Slide {
         Slide(
             title: "What's It Costing You?",
-            notes: "Hand the iPad to the prospect — let them drive the sliders.",
+            notes: "Hand the iPad to the prospect. Let them drive the sliders.",
             background: .solid(theme.backgroundColor),
             elements: [
                 SlideElement(
@@ -279,7 +268,7 @@ enum SampleBook {
 
     private static func solutionOverviewSlide(theme: BookTheme) -> Slide {
         Slide(
-            title: "The Kinetico Solution",
+            title: "The Hydrotech / Canature WaterGroup Solution",
             background: .gradient(
                 start: theme.backgroundColor,
                 end: RGBAColor(red: 0.93, green: 0.96, blue: 0.99),
@@ -301,7 +290,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.28, width: 0.86, height: 0.60),
                     content: .text(TextElementData(
                         string:
-                            "• Twin-tank design means you always have soft water — never an off cycle.\n\n" +
+                            "• Twin-tank design means you always have soft water, never an off cycle.\n\n" +
                             "• Non-electric, demand-driven operation only uses salt when you actually use water.\n\n" +
                             "• 10-year warranty on the control valve. Built in the USA.\n\n" +
                             "• Whisper-quiet regeneration that won't wake the household.",

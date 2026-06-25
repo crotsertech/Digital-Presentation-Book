@@ -1,19 +1,9 @@
-//
-//  PlayerView.swift
-//  Digital Presentation Book
-//
-//  Full presentation runtime. A vertical Liquid Glass control strip lives
-//  on one of the short sides of the screen; a small toggle moves it from
-//  the right edge to the left and back. The slide canvas fills everything
-//  else.
-//
-//  Bluetooth presenter remotes (Logitech R-series, Kensington, AirTurn,
-//  generic clickers) generally send arrow keys, Page Up/Down, B for blank,
-//  or Space — all handled via `onKeyPress` so any standard BLE HID clicker
-//  paired with the iPad / Mac advances slides without extra setup.
-//
-
 import SwiftUI
+
+// Bluetooth presenter remotes (Logitech R-series, Kensington, AirTurn,
+// generic clickers) emulate a keyboard: arrows, Page Up/Down, "B" for
+// blank, Space, etc. Everything routes through `onKeyPress` so any
+// standard BLE HID clicker paired with the iPad/Mac works without setup.
 
 struct PlayerView: View {
     let book: Book
@@ -23,6 +13,13 @@ struct PlayerView: View {
     @State private var presenterMode: Bool = false
     @State private var sidebarVisible: Bool = true
     @State private var controlsVisibleInPresenter: Bool = true
+
+    /// True when the salesperson has blacked out the slide to draw the
+    /// prospect's attention to physical equipment / samples. Bluetooth
+    /// clickers' "B" key, the `.` key, and the on-screen blackout button
+    /// all toggle this. Pressing any navigation key while blanked first
+    /// restores the slide (matching PowerPoint behavior).
+    @State private var blanked: Bool = false
 
     /// Persists which side the control strip lives on across launches.
     @AppStorage("player.controlSide") private var controlSideRaw: String = ControlSide.trailing.rawValue
@@ -35,11 +32,10 @@ struct PlayerView: View {
 
     var body: some View {
         ZStack {
-            // Black bedrock fills the whole cover so letterboxing reads as
-            // intentional cinema black instead of a system background.
+            // Letterboxing reads as intentional cinema black, not a system
+            // background, when this color fills the whole cover.
             Color.black.ignoresSafeArea()
 
-            // Slide + optional sidebar.
             HStack(spacing: 0) {
                 if sidebarVisible && !presenterMode {
                     ChapterSidebar(book: book, currentSlideID: $currentSlideID) { id in
@@ -56,7 +52,15 @@ struct PlayerView: View {
             }
             .ignoresSafeArea(edges: presenterMode ? .all : [])
 
-            // Floating side control strip.
+            // Blackout sits above the slide but below the control strip so
+            // the rep can still operate controls while the screen is dark.
+            if blanked {
+                Color.black
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                    .accessibilityLabel("Screen blacked out")
+            }
+
             if !presenterMode || controlsVisibleInPresenter {
                 HStack {
                     if controlSide == .leading { controlStrip; Spacer() }
@@ -72,12 +76,11 @@ struct PlayerView: View {
         .animation(.snappy, value: sidebarVisible)
         .animation(.snappy, value: controlsVisibleInPresenter)
         .animation(.snappy, value: controlSideRaw)
+        .animation(.easeInOut(duration: 0.2), value: blanked)
         .onAppear { selectInitialSlideIfNeeded() }
         .focusable()
         .focusEffectDisabled()
 
-        // Standard slide-advance keys. Covers the vast majority of
-        // Bluetooth presenter remotes which emulate a keyboard.
         .onKeyPress(.rightArrow) { advance(by: 1);  return .handled }
         .onKeyPress(.leftArrow)  { advance(by: -1); return .handled }
         .onKeyPress(.downArrow)  { advance(by: 1);  return .handled }
@@ -88,20 +91,23 @@ struct PlayerView: View {
         .onKeyPress(.return)     { advance(by: 1);  return .handled }
         .onKeyPress(.home)       { jumpTo(.first);  return .handled }
         .onKeyPress(.end)        { jumpTo(.last);   return .handled }
+
+        // Clickers with a dedicated "blank" button emit "b" or ".".
+        .onKeyPress("b")         { blanked.toggle(); return .handled }
+        .onKeyPress(".")         { blanked.toggle(); return .handled }
+
         .onKeyPress(.escape) {
+            if blanked       { blanked = false; return .handled }
             if presenterMode { presenterMode = false; return .handled }
             return .ignored
         }
 
-        // In presenter mode a tap on dead space toggles the chrome.
         .onTapGesture {
             if presenterMode {
                 controlsVisibleInPresenter.toggle()
             }
         }
     }
-
-    // MARK: - Slide stage
 
     private var slideStage: some View {
         ZStack {
@@ -129,12 +135,9 @@ struct PlayerView: View {
         )
     }
 
-    // MARK: - Vertical control strip
-
     private var controlStrip: some View {
         GlassEffectContainer(spacing: 14) {
             VStack(spacing: 14) {
-                // Close — red, destructive
                 glassButton(
                     systemImage: "xmark",
                     label: "Close",
@@ -144,7 +147,6 @@ struct PlayerView: View {
                 }
                 .keyboardShortcut(.cancelAction)
 
-                // Sidebar toggle (chapter outline)
                 if !presenterMode {
                     glassButton(
                         systemImage: sidebarVisible ? "sidebar.leading" : "sidebar.squares.leading",
@@ -155,7 +157,6 @@ struct PlayerView: View {
                     }
                 }
 
-                // Previous — yellow
                 glassButton(
                     systemImage: "chevron.left",
                     label: "Previous slide",
@@ -165,7 +166,6 @@ struct PlayerView: View {
                 }
                 .disabled(globalIndex == 0)
 
-                // Position indicator
                 VStack(spacing: 2) {
                     Text(positionLabel)
                         .font(.callout.monospacedDigit().weight(.semibold))
@@ -182,7 +182,6 @@ struct PlayerView: View {
                 .frame(width: 72)
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18))
 
-                // Next — green
                 glassButton(
                     systemImage: "chevron.right",
                     label: "Next slide",
@@ -190,9 +189,17 @@ struct PlayerView: View {
                 ) {
                     advance(by: 1)
                 }
-                .disabled(globalIndex >= book.allSlides.count - 1)
+                .disabled(globalIndex >= book.presentableSlides.count - 1)
 
-                // Present / Exit-present
+                glassButton(
+                    systemImage: blanked ? "eye.fill" : "eye.slash.fill",
+                    label: blanked ? "Show slide" : "Black out screen",
+                    tint: blanked ? .blue : nil
+                ) {
+                    blanked.toggle()
+                }
+                .keyboardShortcut("b", modifiers: [])
+
                 glassButton(
                     systemImage: presenterMode ? "rectangle.compress.vertical" : "play.rectangle.fill",
                     label: presenterMode ? "Exit presenter" : "Present",
@@ -203,7 +210,6 @@ struct PlayerView: View {
                 }
                 .keyboardShortcut("p", modifiers: [.command])
 
-                // Side toggle (move strip to the other short side)
                 glassButton(
                     systemImage: controlSide == .trailing
                         ? "arrow.left.to.line"
@@ -217,8 +223,8 @@ struct PlayerView: View {
         }
     }
 
-    /// A tinted Liquid Glass circular button. Pass `tint = nil` for the
-    /// neutral variant used by utility buttons (sidebar/present/side-flip).
+    /// Tinted Liquid Glass circular button. `tint = nil` gives the neutral
+    /// variant used by utility buttons (sidebar/present/side-flip).
     @ViewBuilder
     private func glassButton(
         systemImage: String,
@@ -242,31 +248,32 @@ struct PlayerView: View {
         .accessibilityLabel(label)
     }
 
-    // MARK: - State helpers
-
     private var currentSlide: Slide? {
-        guard let id = currentSlideID else { return book.allSlides.first }
-        return book.allSlides.first { $0.id == id }
+        guard let id = currentSlideID else { return book.presentableSlides.first }
+        return book.presentableSlides.first { $0.id == id }
     }
 
     private var globalIndex: Int {
         guard let id = currentSlideID else { return 0 }
-        return book.allSlides.firstIndex { $0.id == id } ?? 0
+        return book.presentableSlides.firstIndex { $0.id == id } ?? 0
     }
 
     private var positionLabel: String {
-        let total = book.allSlides.count
-        return total == 0 ? "—" : "\(globalIndex + 1) / \(total)"
+        let total = book.presentableSlides.count
+        return total == 0 ? "0 / 0" : "\(globalIndex + 1) / \(total)"
     }
 
     private func selectInitialSlideIfNeeded() {
         if currentSlideID == nil {
-            currentSlideID = book.allSlides.first?.id
+            currentSlideID = book.presentableSlides.first?.id
         }
     }
 
     private func advance(by delta: Int) {
-        let slides = book.allSlides
+        // Any nav action while blanked restores the slide first, matching
+        // PowerPoint behavior so a clicker press doesn't seem to do nothing.
+        if blanked { blanked = false }
+        let slides = book.presentableSlides
         guard !slides.isEmpty else { return }
         let next = max(0, min(slides.count - 1, globalIndex + delta))
         currentSlideID = slides[next].id
@@ -275,7 +282,8 @@ struct PlayerView: View {
     private enum JumpTarget { case first, last }
 
     private func jumpTo(_ target: JumpTarget) {
-        let slides = book.allSlides
+        if blanked { blanked = false }
+        let slides = book.presentableSlides
         guard !slides.isEmpty else { return }
         switch target {
         case .first: currentSlideID = slides.first?.id
@@ -283,8 +291,6 @@ struct PlayerView: View {
         }
     }
 }
-
-// MARK: - Control side preference
 
 private enum ControlSide: String {
     case leading, trailing

@@ -3,8 +3,7 @@ import SwiftUI
 struct AboutSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    // TODO: fill in once the repo URL is final.
-    private let githubURL: URL? = nil
+    private let githubURL = URL(string: "https://github.com/crotsertech/Digital-Presentation-Book")
 
     private let contactEmail = "ntc@crotser.dev"
 
@@ -71,24 +70,13 @@ struct AboutSheet: View {
     @ViewBuilder
     private var feedbackSection: some View {
         Section {
-            if let url = githubURL {
-                Link(destination: url) {
+            if let url = githubURL, let issuesURL = URL(string: url.absoluteString + "/issues") {
+                Link(destination: issuesURL) {
                     Label("Report a bug on GitHub", systemImage: "ladybug.fill")
                 }
-                Link(destination: url) {
+                Link(destination: issuesURL) {
                     Label("Request a feature on GitHub", systemImage: "lightbulb.fill")
                 }
-            } else {
-                HStack(alignment: .top, spacing: 12) {
-                    Image(systemName: "ladybug.fill")
-                        .font(.title3)
-                        .foregroundStyle(.tint)
-                        .frame(width: 28)
-                    Text("Bug reports and feature requests live on the project's GitHub page (link coming soon).")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 2)
             }
         } header: {
             Text("Feedback")
@@ -104,6 +92,11 @@ struct AboutSheet: View {
             LabeledContent("Author") {
                 Text("N. T. Crotser")
                     .font(.subheadline.weight(.medium))
+            }
+            if let url = githubURL {
+                Link(destination: url) {
+                    Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                }
             }
             if let url = URL(string: "mailto:\(contactEmail)") {
                 Link(destination: url) {

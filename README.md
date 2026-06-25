@@ -4,6 +4,8 @@ A SwiftUI iPad and Mac app for running and editing sales presentations offline.
 Each presentation is a `.dpb` package (a zip with a `manifest.json` and an
 `assets/` folder) that lives entirely on the device.
 
+Project home: https://github.com/crotsertech/Digital-Presentation-Book
+
 ## What it does
 
 - Build slides with text, images, video, shapes, and small interactive widgets.
@@ -21,7 +23,8 @@ notes, and assets stay in the app sandbox.
 
 ## Feedback
 
-Bug reports and feature requests go on the project's GitHub issues page.
+Bug reports and feature requests go on the project's GitHub issues page:
+https://github.com/crotsertech/Digital-Presentation-Book/issues
 
 Author: N. T. Crotser, ntc@crotser.dev
 

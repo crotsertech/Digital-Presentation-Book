@@ -28,7 +28,7 @@ enum SampleBook {
 
         let solution = Chapter(
             title: "The Solution",
-            summary: "Introduce the Hydrotech / Canature WaterGroup lineup.",
+            summary: "Introduce a softener or filter that fits the home.",
             accentColor: RGBAColor(red: 0.27, green: 0.66, blue: 0.32),
             slides: [
                 solutionOverviewSlide(theme: theme),
@@ -39,7 +39,7 @@ enum SampleBook {
         return Book(
             title: "Sample Water Treatment Presentation",
             subtitle: "A starter book to demo every feature.",
-            author: "Starholder Softworks",
+            author: "Your Dealership",
             theme: theme,
             chapters: [intro, problem, solution]
         )
@@ -56,10 +56,10 @@ enum SampleBook {
             ),
             elements: [
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.30, width: 0.86, height: 0.20),
+                    frame: NormalizedRect(x: 0.07, y: 0.34, width: 0.86, height: 0.18),
                     content: .text(TextElementData(
                         string: "Better Water for Your Home",
-                        fontSize: 84,
+                        fontSize: 64,
                         fontWeight: .heavy,
                         color: RGBAColor(white: 1.0),
                         alignment: .leading,
@@ -67,35 +67,14 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.52, width: 0.86, height: 0.08),
+                    frame: NormalizedRect(x: 0.07, y: 0.56, width: 0.86, height: 0.10),
                     content: .text(TextElementData(
-                        string: "A free, no-obligation water analysis from your local Hydrotech / Canature WaterGroup dealer.",
-                        fontSize: 28,
+                        string: "A free, no-obligation water analysis from your local water treatment dealer.",
+                        fontSize: 24,
                         fontWeight: .medium,
                         color: RGBAColor(white: 1.0, alpha: 0.88),
                         alignment: .leading,
                         lineSpacing: 4
-                    ))
-                ),
-                SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.78, width: 0.30, height: 0.10),
-                    content: .shape(ShapeElementData(
-                        kind: .roundedRectangle,
-                        fill: RGBAColor(white: 1.0, alpha: 0.18),
-                        stroke: RGBAColor(white: 1.0, alpha: 0.55),
-                        strokeWidth: 1.5,
-                        cornerRadius: 14
-                    ))
-                ),
-                SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.78, width: 0.30, height: 0.10),
-                    content: .text(TextElementData(
-                        string: "Water · Air · You",
-                        fontSize: 24,
-                        fontWeight: .semibold,
-                        color: RGBAColor(white: 1.0),
-                        alignment: .center,
-                        lineSpacing: 0
                     ))
                 )
             ]
@@ -111,7 +90,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.10, width: 0.86, height: 0.12),
                     content: .text(TextElementData(
                         string: "Here's What We'll Cover Today",
-                        fontSize: 56,
+                        fontSize: 44,
                         fontWeight: .bold,
                         color: theme.primaryColor,
                         alignment: .leading,
@@ -124,13 +103,13 @@ enum SampleBook {
                         string:
                             "1. A quick look at your home's water test results\n" +
                             "2. What hard water actually costs you each year\n" +
-                            "3. The Hydrotech / Canature WaterGroup solution that fits your home\n" +
+                            "3. The right softener or filter for your home\n" +
                             "4. Your questions, and next steps",
-                        fontSize: 32,
+                        fontSize: 28,
                         fontWeight: .medium,
                         color: theme.defaultTextColor,
                         alignment: .leading,
-                        lineSpacing: 14
+                        lineSpacing: 12
                     ))
                 )
             ]
@@ -146,7 +125,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.08, width: 0.86, height: 0.10),
                     content: .text(TextElementData(
                         string: "What Is Hard Water?",
-                        fontSize: 56,
+                        fontSize: 44,
                         fontWeight: .bold,
                         color: theme.primaryColor,
                         alignment: .leading,
@@ -154,18 +133,18 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.22, width: 0.86, height: 0.18),
+                    frame: NormalizedRect(x: 0.07, y: 0.20, width: 0.86, height: 0.22),
                     content: .text(TextElementData(
                         string:
                             "\"Hard\" water carries dissolved minerals (mostly calcium and magnesium) " +
                             "picked up as rain water moves through the ground. Those minerals are " +
                             "harmless to drink, but they wreak havoc on your plumbing, your appliances, " +
                             "and your skin.",
-                        fontSize: 26,
+                        fontSize: 22,
                         fontWeight: .regular,
                         color: theme.defaultTextColor,
                         alignment: .leading,
-                        lineSpacing: 8
+                        lineSpacing: 6
                     ))
                 ),
 
@@ -180,10 +159,10 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.10, y: 0.52, width: 0.21, height: 0.32),
+                    frame: NormalizedRect(x: 0.10, y: 0.54, width: 0.21, height: 0.30),
                     content: .text(TextElementData(
-                        string: "Scale\nbuildup\non heating\nelements",
-                        fontSize: 24,
+                        string: "Scale buildup on heating elements",
+                        fontSize: 20,
                         fontWeight: .semibold,
                         color: RGBAColor(white: 1.0),
                         alignment: .leading,
@@ -202,10 +181,10 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.395, y: 0.52, width: 0.21, height: 0.32),
+                    frame: NormalizedRect(x: 0.395, y: 0.54, width: 0.21, height: 0.30),
                     content: .text(TextElementData(
-                        string: "More\nsoap and\ndetergent\nrequired",
-                        fontSize: 24,
+                        string: "More soap and detergent required",
+                        fontSize: 20,
                         fontWeight: .semibold,
                         color: RGBAColor(white: 1.0),
                         alignment: .leading,
@@ -224,10 +203,10 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.69, y: 0.52, width: 0.21, height: 0.32),
+                    frame: NormalizedRect(x: 0.69, y: 0.54, width: 0.21, height: 0.30),
                     content: .text(TextElementData(
-                        string: "Shorter\nappliance\nlifespan",
-                        fontSize: 24,
+                        string: "Shorter appliance lifespan",
+                        fontSize: 20,
                         fontWeight: .semibold,
                         color: RGBAColor(white: 1.0),
                         alignment: .leading,
@@ -248,7 +227,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.06, width: 0.86, height: 0.10),
                     content: .text(TextElementData(
                         string: "What's Hard Water Costing You?",
-                        fontSize: 52,
+                        fontSize: 40,
                         fontWeight: .bold,
                         color: theme.primaryColor,
                         alignment: .leading,
@@ -268,7 +247,7 @@ enum SampleBook {
 
     private static func solutionOverviewSlide(theme: BookTheme) -> Slide {
         Slide(
-            title: "The Hydrotech / Canature WaterGroup Solution",
+            title: "The Right System for Your Home",
             background: .gradient(
                 start: theme.backgroundColor,
                 end: RGBAColor(red: 0.93, green: 0.96, blue: 0.99),
@@ -279,7 +258,7 @@ enum SampleBook {
                     frame: NormalizedRect(x: 0.07, y: 0.10, width: 0.86, height: 0.12),
                     content: .text(TextElementData(
                         string: "Built for Real Homes",
-                        fontSize: 56,
+                        fontSize: 48,
                         fontWeight: .bold,
                         color: theme.primaryColor,
                         alignment: .leading,
@@ -287,14 +266,14 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.28, width: 0.86, height: 0.60),
+                    frame: NormalizedRect(x: 0.07, y: 0.26, width: 0.86, height: 0.66),
                     content: .text(TextElementData(
                         string:
-                            "• Twin-tank design means you always have soft water, never an off cycle.\n\n" +
-                            "• Non-electric, demand-driven operation only uses salt when you actually use water.\n\n" +
-                            "• 10-year warranty on the control valve. Built in the USA.\n\n" +
-                            "• Whisper-quiet regeneration that won't wake the household.",
-                        fontSize: 30,
+                            "• Sized to your home's actual usage, not a generic spec sheet.\n\n" +
+                            "• Efficient regeneration only when you've used enough water to need it.\n\n" +
+                            "• Backed by a manufacturer warranty and your dealer's local service.\n\n" +
+                            "• Quiet enough to install near living spaces.",
+                        fontSize: 24,
                         fontWeight: .medium,
                         color: theme.defaultTextColor,
                         alignment: .leading,
@@ -311,10 +290,10 @@ enum SampleBook {
             background: .solid(theme.primaryColor),
             elements: [
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.22, width: 0.86, height: 0.18),
+                    frame: NormalizedRect(x: 0.07, y: 0.26, width: 0.86, height: 0.18),
                     content: .text(TextElementData(
                         string: "Ready to Make the Switch?",
-                        fontSize: 72,
+                        fontSize: 56,
                         fontWeight: .heavy,
                         color: RGBAColor(white: 1.0),
                         alignment: .leading,
@@ -322,12 +301,12 @@ enum SampleBook {
                     ))
                 ),
                 SlideElement(
-                    frame: NormalizedRect(x: 0.07, y: 0.46, width: 0.86, height: 0.30),
+                    frame: NormalizedRect(x: 0.07, y: 0.48, width: 0.86, height: 0.30),
                     content: .text(TextElementData(
                         string:
                             "We'll get installation on the calendar this week, walk you through " +
-                            "financing options, and have soft water in your home before the weekend.",
-                        fontSize: 28,
+                            "your options, and have better water in your home soon.",
+                        fontSize: 22,
                         fontWeight: .medium,
                         color: RGBAColor(white: 1.0, alpha: 0.92),
                         alignment: .leading,

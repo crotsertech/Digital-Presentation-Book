@@ -143,7 +143,7 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
                                     frame: NormalizedRect(x: 0.08, y: 0.36, width: 0.84, height: 0.18),
                                     content: .text(TextElementData(
                                         string: "Welcome to better water.",
-                                        fontSize: 72,
+                                        fontSize: 56,
                                         fontWeight: .heavy,
                                         color: RGBAColor(white: 1.0),
                                         alignment: .leading,
@@ -165,7 +165,7 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
                                     frame: NormalizedRect(x: 0.08, y: 0.1, width: 0.84, height: 0.12),
                                     content: .text(TextElementData(
                                         string: "Walk-Through",
-                                        fontSize: 56,
+                                        fontSize: 44,
                                         fontWeight: .bold,
                                         color: theme.primaryColor,
                                         alignment: .leading,
@@ -187,7 +187,7 @@ enum BookTemplate: String, CaseIterable, Identifiable, Sendable {
                                     frame: NormalizedRect(x: 0.08, y: 0.36, width: 0.84, height: 0.30),
                                     content: .text(TextElementData(
                                         string: "Service reminders, referral program, and your annual check-up.",
-                                        fontSize: 32,
+                                        fontSize: 24,
                                         fontWeight: .medium,
                                         color: theme.defaultTextColor,
                                         alignment: .leading,

@@ -189,7 +189,8 @@ struct LibraryView: View {
                         onRename: {
                             renameDraft = book.title
                             renamingBook = book
-                        }
+                        },
+                        onToggleLock: { toggleLock(book) }
                     )
                 }
             }
@@ -283,6 +284,16 @@ struct LibraryView: View {
             if let only = store.books.first { editingBook = only }
         default:
             showingEditPicker = true
+        }
+    }
+
+    private func toggleLock(_ book: Book) {
+        var updated = book
+        updated.isLocked.toggle()
+        do {
+            try store.save(updated)
+        } catch {
+            store.lastError = error.localizedDescription
         }
     }
 

@@ -8,24 +8,30 @@ struct BookCard: View {
     var onExport: () -> Void
     var onDelete: () -> Void
     var onRename: () -> Void
+    var onToggleLock: () -> Void
 
     var body: some View {
-        Button(action: onOpen) {
-            VStack(alignment: .leading, spacing: 0) {
-                preview
-                metadata
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background, in: RoundedRectangle(cornerRadius: 18))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .strokeBorder(.quaternary, lineWidth: 1)
-            )
+        VStack(alignment: .leading, spacing: 0) {
+            preview
+            metadata
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .strokeBorder(.quaternary, lineWidth: 1)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 18))
+        .onTapGesture { onOpen() }
         .contextMenu {
             Button("Present", systemImage: "play.fill", action: onOpen)
             Button("Edit…", systemImage: "pencil", action: onEdit)
+                .disabled(book.isLocked)
+            Button(
+                book.isLocked ? "Unlock Changes" : "Lock Changes",
+                systemImage: book.isLocked ? "lock.open.fill" : "lock.fill",
+                action: onToggleLock
+            )
             Button("Rename…", systemImage: "character.cursor.ibeam", action: onRename)
             Button("Export…", systemImage: "square.and.arrow.up", action: onExport)
             Divider()
@@ -99,42 +105,21 @@ struct BookCard: View {
     }
 
     private var metadata: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Text("\(book.allSlides.count) slide\(book.allSlides.count == 1 ? "" : "s")")
-                    .font(.caption.weight(.medium))
-                Text("·")
+        HStack(spacing: 6) {
+            Text("\(book.allSlides.count) slide\(book.allSlides.count == 1 ? "" : "s")")
+                .font(.caption.weight(.medium))
+            Text("·")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+            Text(book.updatedAt.formatted(date: .abbreviated, time: .omitted))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            if book.isLocked {
+                Label("Locked", systemImage: "lock.fill")
+                    .labelStyle(.iconOnly)
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
-                Text(book.updatedAt.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption2)
                     .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-            }
-
-            HStack(spacing: 10) {
-                Button {
-                    onEdit()
-                } label: {
-                    Label("Edit", systemImage: "pencil")
-                        .labelStyle(.titleAndIcon)
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.regular)
-
-                Button {
-                    onOpen()
-                } label: {
-                    Label("Present", systemImage: "play.fill")
-                        .labelStyle(.titleAndIcon)
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
-                .tint(book.theme.primaryColor.color)
             }
         }
         .padding(14)

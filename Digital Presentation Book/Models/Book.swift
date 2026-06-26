@@ -75,6 +75,10 @@ struct Book: Codable, Identifiable, Hashable, Sendable {
 
     var formatVersion: Int
 
+    /// When true, the editor is unreachable from the library. Guards against
+    /// accidental edits during a live presentation.
+    var isLocked: Bool
+
     init(
         id: UUID = UUID(),
         title: String,
@@ -86,7 +90,8 @@ struct Book: Codable, Identifiable, Hashable, Sendable {
         createdAt: Date = .now,
         updatedAt: Date = .now,
         revision: Int = 1,
-        formatVersion: Int = kDPBFormatVersion
+        formatVersion: Int = kDPBFormatVersion,
+        isLocked: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -99,6 +104,24 @@ struct Book: Codable, Identifiable, Hashable, Sendable {
         self.updatedAt = updatedAt
         self.revision = revision
         self.formatVersion = formatVersion
+        self.isLocked = isLocked
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(UUID.self, forKey: .id)
+        self.title = try c.decode(String.self, forKey: .title)
+        self.subtitle = try c.decode(String.self, forKey: .subtitle)
+        self.author = try c.decode(String.self, forKey: .author)
+        self.aspectRatio = try c.decode(BookAspectRatio.self, forKey: .aspectRatio)
+        self.theme = try c.decode(BookTheme.self, forKey: .theme)
+        self.chapters = try c.decode([Chapter].self, forKey: .chapters)
+        self.createdAt = try c.decode(Date.self, forKey: .createdAt)
+        self.updatedAt = try c.decode(Date.self, forKey: .updatedAt)
+        self.revision = try c.decode(Int.self, forKey: .revision)
+        self.formatVersion = try c.decode(Int.self, forKey: .formatVersion)
+        // Books written before the lock flag existed default to unlocked.
+        self.isLocked = try c.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
     }
 
     /// All slides in order, including hidden ones. Used by the editor.
